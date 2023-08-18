@@ -1,0 +1,80 @@
+# Projeto-Monitoramento
+
+--Projeto Sistema de Monitoramento de Estoque
+
+--Descrição:
+--Este projeto consiste na criacao de um sistema simples de monitoramento usando o SQL Server e Views para dotar informaçoes sobre o estoque de livros 
+--O objetivo central do projeto era criar um sistema que automatizasse a tarefa de gerenciar o estoque, permitindo a uma visão clara das informações consideráveis para avaliar e ter tomada de decisões.
+
+--Criação de bamco de dados
+CREATE DATABASE S_Monitoramento
+go
+ -- Criaçaõ de tabelas ItensLivros e Processo
+CREATE TABLE ItensLivros (
+	ID_livro INT PRIMARY KEY,
+	Titulo VARCHAR(150) NOT NULL,
+	Autor VARCHAR(150) NOT NULL,
+	Quantidade INT NOT NULL,
+	Preco FLOAT NOT NULL
+);
+
+CREATE TABLE Processo (
+	ID_Processo INT PRIMARY KEY,
+	ID_livro INT,
+	Classe VARCHAR(50),
+	Quantidade INT,
+	FOREIGN KEY (ID_livro) REFERENCES ItensLivros(ID_Livro)
+
+);
+
+--Inserindo registros na tabela ItensLivros
+
+INSERT INTO ItensLivros (ID_livro, Titulo,Autor,  Quantidade, Preco)
+VALUES (1,'Grande Sertão', 'Guimarães Rosa ', 100, 43.50),
+	   (2,'Laços de família', 'Clarice Lispector ', 10, 50.60),
+	   (3,'A mão e a luva', 'Machado de Assis ', 50, 30.00),
+	   (4,'Romanceiro da inconfidência', 'Cecília Meireles ', 45, 43.90),
+	   (5,'Jubiabá', 'Jorge Amado ', 100, 60.80),
+	   (6,'A vida como ela é', 'Nelson Rodrigues', 60, 25.90),
+	   (7,'Noite na taverna', 'Álvares de Azevedo ', 56, 56.60);
+
+--Inserindo registros na tabela Processo
+
+INSERT INTO Processo (ID_Processo, ID_livro, Classe, Quantidade)
+VALUES (1,1, 'Venda', 36),
+	   (2,2, 'Compra', 60),
+	   (3,3, 'Venda', 25),
+	   (4,4, 'Compra', 40),
+	   (5,5, 'Venda', 10),
+	   (6,6, 'Venda', 10),
+	   (7,7, 'Venda', 5);
+
+-- Criaçao de View de armazenamento Total de livros, com as informaçoes importantes
+CREATE VIEW ArmazenamentoTotal AS
+SELECT ID_livro, Titulo, Quantidade, Preco, Quantidade * Preco AS ValorTotal
+FROM ItensLivros;
+
+-- Criaçao de View de somente de livros com armazenameto abaixo de 20, irá ajudar na decisão para reabastecimento
+CREATE VIEW ArmazenamentoBaixo AS
+SELECT ID_livro, Titulo, Quantidade, Preco
+FROM ItensLivros
+WHERE Quantidade < 20; 
+
+-- Criaçao de View de somente de livros mais vendidos
+
+CREATE VIEW LivroMaisVendido AS
+SELECT a.ID_livro, a.Titulo, SUM(b.Quantidade) AS TotalVendido
+FROM ItensLivros a
+INNER JOIN Processo b
+ON a.ID_livro = b.ID_livro
+WHERE b.Classe = 'Venda'
+GROUP BY a.ID_livro, a.Titulo
+
+
+-- Testando as views
+SELECT * FROM ArmazenamentoTotal;
+SELECT * FROM ArmazenamentoBaixo;
+SELECT * FROM LivroMaisVendido;
+
+
+
